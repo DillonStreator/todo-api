@@ -31,8 +31,10 @@ router.post('/signin', async (req, res, next) => {
 
 router.post('/signup', async (req, res, next) => {
         try {
-                if (!req.body.email || !req.body.password) return res.status(400).json({ data: {}, message: "You must provide both email and password" });
+                if (!req.body.email || !req.body.password || !req.body.passwordConfirm) return res.status(400).json({ data: {}, message: "You must provide email, password, and passwordConfirm fields" });
 
+                if (req.body.password !== req.body.passwordConfirm) return res.status(400).json({data:{},message:"Your password and passwordConfirm must match."});
+                
                 let findResult = await db.Query("SELECT * FROM todos.user WHERE email = $1", [req.body.email]);
                 if (findResult.rows.length) return res.status(400).json({ data: {}, message: "That email address is already in use." });
 
