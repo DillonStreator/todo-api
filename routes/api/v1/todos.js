@@ -7,7 +7,8 @@ router.get('/', async (req, res, next) => {
 
         try {
                 const result = await db.Query("SELECT * FROM todos.todo WHERE user_id = $1",[req.user.id]);
-                res.status(200).send(result.rows);
+                const todos = result.rows;
+                res.status(200).json({data:{todos},message:"Successfully got todos."});
         }
         catch (error) {
                 next(error);
