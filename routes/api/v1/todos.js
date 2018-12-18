@@ -20,7 +20,7 @@ router.post('/', async (req, res, next) => {
         try {
                 if (!req.body.todo) return res.status(400).json({data:{},message:"You must provide a todo item!"});
 
-                const result = await db.Query("INSERT INTO todos.todo (text, created_at, user_id) VALUES ($1, $2, $3) RETURNING *",[req.body.todo, new Date(), req.user.id]);
+                const result = await db.Query("INSERT INTO todos.todo (text, completed, created_at, user_id) VALUES ($1, $2, $3, $4) RETURNING *",[req.body.todo, req.body.completed || false, new Date(), req.user.id]);
                 const todo = result.rows[0];
                 return res.status(201).json({data:{todo},message:"Successfully created todo!"});
         }
@@ -31,13 +31,13 @@ router.post('/', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
 
-        try {   
-                if (!req.body.todo) return res.status(400).json({data:{},message:"You must provide a todo text"});
+        try {
+                if (!req.body.todo || !req.body.completed) return res.status(400).json({data:{},message:"You must provide content to update the todo with."});
 
                 let lookupResult = await db.Query("SELECT * FROM todos.todo WHERE id = $1 AND user_id = $2",[req.params.id,req.user.id]);
                 if (!lookupResult.rows.length) return res.status(400).json({data:{},message:"Could not find that todo."});
 
-                let updateResult = await db.Query("UPDATE todos.todo SET text = $1, updated_at = $2 WHERE id = $3 RETURNING *",[req.body.todo,new Date(),req.params.id]);
+                let updateResult = await db.Query("UPDATE todos.todo SET text = $1, completed = $2 updated_at = $3 WHERE id = $4 RETURNING *",[req.body.todo,req.body.completed,new Date(),req.params.id]);
                 let todo = updateResult.rows[0];
 
                 return res.status(200).json({data:{todo},message:"Successfully updated todo!"});
